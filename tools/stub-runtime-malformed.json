@@ -1,0 +1,13 @@
+{
+  "_comment": "Dedicated stub for tools\\verify-mcp-malformed.ps1: everything EXCEPT get_catalog is healthy, and get_catalog returns a payload that is not valid JSON. Proves the MCP layer turns a hijacked/broken port into a readable tool error instead of feeding garbage to the model.",
+
+  "get_health": { "status": "ok", "pid": 4242, "schemaVersion": 1, "gameLoaded": true, "stub": true },
+  "get_state": { "schemaVersion": 1, "gameLoaded": true, "gameTick": 1, "stub": true },
+  "dsp_find_items": { "schemaVersion": 1, "returned": 0, "items": [], "stub": true },
+
+  "_default": { "error": "unknown_or_disabled_op", "stub": true },
+
+  "_raw": {
+    "get_catalog": "{\"schemaVersion\":1,\"items\":612,"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "_comment": "Raw/verbatim variant of stub-runtime.json: values under _raw are passed to the MCP client byte-for-byte, so this file can exercise NON-JSON and truncated upstream payloads. Use with: powershell -File tools\\verify-mcp.ps1 -Stub tools\\stub-runtime-raw.json",
+
+  "get_health": { "status": "ok", "pid": 4242, "schemaVersion": 1, "gameLoaded": true, "stub": true },
+
+  "_raw": {
+    "get_state": "<html><body>405 Method Not Allowed</body></html>",
+    "get_catalog": "{\"schemaVersion\":1,\"items\":612,"
+  },
+
+  "_default": { "error": "unknown_or_disabled_op", "stub": true }
+}

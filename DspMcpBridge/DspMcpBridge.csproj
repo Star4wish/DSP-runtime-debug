@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    DspMcpBridge: the out-of-process MCP server.
+
+    It must live in its own process: the MCP C# SDK 2.x runs on modern .NET, while the
+    in-game bridge is pinned to net472 by CommonAPI/BepInEx 5. The two cannot share an
+    assembly (doc 5.1, hard constraint 1).
+
+    The game-side token is read from %LOCALAPPDATA%\DSPBridge\runtime.json, so nothing
+    here needs to be reconfigured when the bridge rotates its token.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RollForward>Major</RollForward>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>DspMcpBridge</AssemblyName>
+    <RootNamespace>DspMcpBridge</RootNamespace>
+    <Version>1.0.0</Version>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      ModelContextProtocol 2.x speaks the 2026-07-28 protocol revision (stateless,
+      server/discover) and stays backward compatible with 2025-11-25. Do not pin an
+      older 1.x: the pre-2.0 SDKs cannot serve modern clients.
+    -->
+    <PackageReference Include="ModelContextProtocol" Version="2.2.0" />
+    <!--
+      The MCP SDK ships hosting *abstractions*; Host.CreateApplicationBuilder and the
+      console logger live in the full Hosting package. Without it the explicit
+      Host.CreateApplicationBuilder entry point does not compile.
+    -->
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.10" />
+    <!--
+      System.Net.Http.Json (JsonContent.Create) and System.Text.Json ship with the
+      net10.0 shared framework, so no explicit reference is needed. The full Hosting
+      package above is required though: the MCP package only pulls Hosting.Abstractions,
+      and Host.CreateApplicationBuilder does not exist without it (CS0103).
+    -->
+  </ItemGroup>
+
+</Project>

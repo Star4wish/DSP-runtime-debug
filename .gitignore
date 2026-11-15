@@ -1,0 +1,49 @@
+# ---- 构建产物 ----
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# ---- 第三方 / 本机生成（不入库） ----
+# 编译引用：由 tools\fetch-refs.ps1 从本机游戏与 BepInEx 生成
+tools/refs/
+tools/bepinex-lib/
+
+# 游戏侧二进制（Doorstop / BepInEx core / 已编译插件），见 game-side-patch/README.md
+game-side-patch/winhttp.dll
+game-side-patch/doorstop_config.ini
+game-side-patch/.doorstop_version
+game-side-patch/changelog.txt
+game-side-patch/BepInEx/
+
+# 便携工具链与缓存
+tools/dotnet-sdk/
+tools/dotnet-home/
+tools/nuget-packages/
+tools/pylibs/
+tools/downloads/
+tools/appdata/
+tools/localappdata/
+tools/tmp/
+*.nupkg
+
+# 运行期产物
+logs/
+tools/DspBridge-audit.log
+*.log
+output_log.txt
+
+# ---- 本机配置 / 密钥（绝不入库） ----
+# 由 setup-machine.ps1 生成，含本机绝对路径
+tools/machine.config.ps1
+# MCP 客户端注册：请复制 .mcp.json.example 后自行修改
+.mcp.json
+
+# 运行期发现文件（含 token）
+runtime.json
+
+# ---- 编辑器 / 系统 ----
+Thumbs.db
+desktop.ini
+.DS_Store

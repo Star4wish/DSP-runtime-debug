@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    BridgeCoreTest: proves the bridge plugin's PURE logic without a game or Unity.
+
+    The plugin targets net472 because it must load into Unity Mono, so its code cannot be
+    executed here. This project compiles the SAME source files (linked, not copied) for
+    net10.0 together with a tiny shim that supplies the two BepInEx types the pure logic
+    references.
+
+    What this covers, and why those are the parts worth covering:
+      * Json.Parse / Json.Str   : the only parser in the bridge; garbage in must not throw.
+      * CommandRouter.Execute   : the closed-by-default op table, the L1 write gate, the
+                                  audit trail, and token redaction in log output. These are
+                                  the security-relevant paths (doc 5.9).
+      * Reflect helpers         : null-safety of the version-drift shim.
+
+    It deliberately does NOT try to fake GameMain: game reading is verified live instead
+    (start the game, then run tools\verify-live.ps1).
+
+    Run: dotnet run with the project path tools\bridge-core-test (see tools\test-all.ps1)
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>BridgeCoreTest</AssemblyName>
+    <RootNamespace>BridgeCoreTest</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="BepInExShim.cs" />
+    <!-- The real bridge sources, compiled as-is. -->
+    <Compile Include="..\..\DspBridge\Json.cs" />
+    <Compile Include="..\..\DspBridge\Reflect.cs" />
+    <Compile Include="..\..\DspBridge\CommandRouter.cs" />
+  </ItemGroup>
+
+</Project>

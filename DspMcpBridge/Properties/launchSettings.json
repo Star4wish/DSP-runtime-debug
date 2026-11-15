@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DspMcpBridge": {
+      "commandName": "Project",
+      "dotnetRunMessages": true
+    }
+  }
+}

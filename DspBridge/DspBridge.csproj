@@ -1,0 +1,97 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    DspBridge: in-game BepInEx 5 bridge plugin.
+
+    Hard constraints (see DSP-MOD-开发环境说明.md section 5.1):
+      * net472        : CommonAPI/BepInEx 5 constraint; anything modern cannot load in Unity Mono.
+      * ZERO third-party dependencies in the output directory. BepInEx loads every dll
+        under BepInEx/plugins at any depth, so shipping Newtonsoft.Json.dll (etc.) here
+        collides with other mods. Only BCL HttpListener + hand-written JSON is used.
+      * No System.Text.Json (broken under Unity Mono, dotnet/runtime#80525).
+
+    Offline build: references the game assemblies from tools\refs via HintPath and
+    never copies them to the output (Private=false).
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <!-- Sources are UTF-8 without BOM and contain Chinese log strings. Without this the
+         compiler decodes them with the ANSI code page (GBK here) and every Chinese string
+         ships as mojibake into the in-game log. -->
+    <CodePage>65001</CodePage>
+    <AssemblyName>DspBridge</AssemblyName>
+    <RootNamespace>DspBridge</RootNamespace>
+    <Version>1.0.2</Version>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <DebugType>none</DebugType>
+    <Description>DSP runtime bridge: loopback HTTP API for LLM-driven runtime debugging</Description>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+    <RefsDir Condition="'$(RefsDir)' == ''">$(MSBuildThisFileDirectory)..\tools\refs</RefsDir>
+    <BepInExLibDir Condition="'$(BepInExLibDir)' == ''">$(MSBuildThisFileDirectory)..\tools\bepinex-lib</BepInExLibDir>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!--
+    BepInEx.Core comes from the local copy on purpose: no network needed, and
+    exactly the runtime that ships with the game. Private=false keeps BepInEx.dll
+    OUT of the plugin directory (copying it there causes a load conflict).
+  -->
+  <ItemGroup>
+    <Reference Include="BepInEx">
+      <HintPath>$(BepInExLibDir)\BepInEx.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(BepInExLibDir)\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(RefsDir)\Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(RefsDir)\UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(RefsDir)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule">
+      <HintPath>$(RefsDir)\UnityEngine.JSONSerializeModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="CheckInputs" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('$(RefsDir)\Assembly-CSharp.dll')"
+           Text="找不到 $(RefsDir)\Assembly-CSharp.dll，请用 -p:RefsDir=... 指定游戏 Managed 目录。" />
+    <Error Condition="!Exists('$(BepInExLibDir)\BepInEx.dll')"
+           Text="找不到 $(BepInExLibDir)\BepInEx.dll，请用 -p:BepInExLibDir=... 指定 BepInEx\core。" />
+  </Target>
+
+  <!--
+    Deployment. Explicit -p:DeployDir=... beats a hard-coded path (a hard-coded path
+    silently fails on other machines). The plugin is the ONLY file that may land in
+    the target directory; the Warning below asserts exactly that.
+  -->
+  <Target Name="DeployToGame" AfterTargets="Build" Condition="'$(DeployDir)' != ''">
+    <MakeDir Directories="$(DeployDir)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(DeployDir)" />
+    <ItemGroup>
+      <DeployedFiles Include="$(DeployDir)\*" />
+    </ItemGroup>
+    <Warning Condition="'@(DeployedFiles)' != '$(DeployDir)\DspBridge.dll'"
+             Text="插件目录 $(DeployDir) 内出现了 DspBridge.dll 以外的文件：@(DeployedFiles)。BepInEx 会加载任意深度的 dll，第三方依赖会与其它 MOD 冲突。" />
+  </Target>
+
+</Project>

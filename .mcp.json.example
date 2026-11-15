@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "dsp-bridge": {
+      "type": "stdio",
+      "command": "C:\\path\\to\\dsp-runtime-debug\\tools\\run-dsp-mcp.cmd",
+      "args": [],
+      "env": {},
+      "timeout": 30000,
+      "description": "DSP runtime debugging bridge: read live Dyson Sphere Program state and issue L0/L1 debug actions. Requires the in-game DspBridge plugin; when the game is closed the tools return a readable business error instead of a protocol failure."
+    }
+  }
+}
